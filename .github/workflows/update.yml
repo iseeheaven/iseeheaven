@@ -1,0 +1,53 @@
+name: Update Grdn Posts
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch latest posts
+        id: fetch
+        run: |
+          python .github/scripts/update.py > new_readme.md
+          echo "content=$(cat new_readme.md | base64 -w0)" >> $GITHUB_OUTPUT
+
+      - name: Check if README changed
+        id: changed
+        run: |
+          if [ -f README.md ]; then
+            if diff -q README.md new_readme.md > /dev/null 2>&1; then
+              echo "changed=false" >> $GITHUB_OUTPUT
+            else
+              echo "changed=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update README
+        if: steps.changed.outputs.changed == 'true'
+        run: |
+          mv new_readme.md README.md
+
+      - name: Commit and push
+        if: steps.changed.outputs.changed == 'true'
+        run: |
+          git config --local user.email "iseeheaven@outlook.com"
+          git config --local user.name "iseeheaven"
+          git add README.md
+          git diff --staged --quiet || git commit -m "is just tending the garden 🏞 "
+          git push
