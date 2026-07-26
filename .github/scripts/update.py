@@ -130,10 +130,10 @@ def generate_readme(posts):
                     day_str = format_day(post['pubDate_dt'])
                     readme += f"- {day_str} - [{post['title']}]({post['link']})\n"
                 readme += "\n"
-
     readme += f"""\
+
 > [`iseeheaven`](https://github.com/iseeheaven) is a facet of [@prjctimg](https://github.com/prjctimg)
-> 
+>
 > Updated daily from RSS feed
 
 """
