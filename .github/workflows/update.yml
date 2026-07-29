@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   update:
-    uses: prjctimg/profile/.github/workflows/update.yml@main
+    uses: prjctimg/profile/.github/workflows/update.yml@v1
     with:
       commit-message: "tending the garden"
       git-user-name: "iseeheaven"

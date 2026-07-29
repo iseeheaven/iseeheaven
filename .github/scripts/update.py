@@ -23,8 +23,12 @@ MONTH_EMOJIS = {
 
 
 def fetch_feed(url):
-    with urllib.request.urlopen(url) as response:
-        return response.read()
+    try:
+        with urllib.request.urlopen(url, timeout=15) as response:
+            return response.read()
+    except Exception as e:
+        print(f"Warning: Failed to fetch RSS feed: {e}", file=sys.stderr)
+        return None
 
 
 def parse_rss(xml_data):
@@ -38,7 +42,7 @@ def parse_rss(xml_data):
         description = item.findtext('description', '')
 
         content_el = item.find('content:encoded', ns)
-        content = content_el.text if content_el is not None else description
+        content = (content_el.text or '') if content_el is not None else description
 
         dt = parsedate_to_datetime(pub_date_str) if pub_date_str else None
         if dt is None:
@@ -143,6 +147,9 @@ def generate_readme(posts):
 def main():
     print("Fetching RSS feed...", file=sys.stderr)
     xml_data = fetch_feed("https://grdn.prjctimg.me/feed.xml")
+    if xml_data is None:
+        print("ERROR: Could not fetch RSS feed, skipping update.", file=sys.stderr)
+        sys.exit(1)
 
     print("Parsing feed...", file=sys.stderr)
     posts = parse_rss(xml_data)
@@ -156,7 +163,7 @@ def main():
             f.write(readme_content)
         print("README.md updated!", file=sys.stderr)
     else:
-        print(readme_content)
+        print(readme_content, end="")
 
 
 if __name__ == "__main__":
